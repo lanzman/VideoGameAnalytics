@@ -1,0 +1,43 @@
+from lxml import html
+import requests
+import pandas as pd
+
+mainURL = r'https://howlongtobeat.com/'
+searchURL = r'https://howlongtobeat.com/search_main.php?page=1'
+
+hltb = requests.get(mainURL)
+
+#title to search
+title = 'Assassin\'s Creed'
+
+#search request using POST
+r = requests.post(searchURL, data = {'queryString' : title})
+
+#get html from page
+tree = html.fromstring(r.content)
+
+#titlelist
+titlepath = '//h3/a/text()'
+titlelist = tree.xpath(titlepath)
+print(titlelist)
+
+#urllist
+urlpath = '//h3/a/@href'
+urllist = tree.xpath(urlpath)
+print(urllist)
+
+#return df for searching
+searchdf = pd.DataFrame({'title':titlelist, 'url':urllist})
+
+#use loop to find match of title in df to get url
+titleurl = searchdf.loc[searchdf['title'] == title]['url'][0]
+
+print(titleurl)
+
+print(titleurl)
+
+hltb.raise_for_status()
+
+hltb.text()
+
+path = '//*[@id="global_search_content"]/li[1]/div[2]/h3/a'
