@@ -78,7 +78,6 @@ gameslist.to_csv('GamesList.csv')
 
 
 
-
 print(searchdf.loc[searchdf.hltbTitle == 'Dead Space 3']['hltbURL'].values)
 
 test = searchdf.loc[searchdf.hltbTitle == 'Dead Space 3']['hltbURL']
@@ -152,5 +151,4 @@ hltb.raise_for_status()
 hltb.text()
 
 path = '//*[@id="global_search_content"]/li[1]/div[2]/h3/a'
-
 
