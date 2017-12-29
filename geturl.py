@@ -6,7 +6,10 @@ import pandas as pd
 os.chdir(r'C:\Users\mike.lanza\Documents\Python\GitHub\VideoGameAnalytics')
 
 #import gameslist csv
-gameslist = pd.read_csv('GamesList.csv', index_col=0)
+gameslist = pd.read_csv('GamesList.csv', index_col=0, encoding= 'ISO-8859-1')
+
+#set Titles to index for quick updating during loop
+gameslist = gameslist.set_index('Titles')
 
 #sets the mainURL and searchURL
 mainURL = r'https://howlongtobeat.com/'
@@ -15,12 +18,18 @@ searchURL = r'https://howlongtobeat.com/search_main.php?page=1'
 #initiates hltb requests
 hltb = requests.get(mainURL)
 
-for i in gameslist.loc[(pd.isnull(gameslist.hltbTitle))].itertuples():
+#loop through all titles to post requests
+for i in gameslist.loc[gameslist.hltbTitle.isnull()].itertuples():
+    
+    #checks if hltbTitle and hltbURL are both not NaN, if they are anything, they have already been processed and can be skipped
+    if ~np.isnan(i.hltbTitle) and ~np.isnan(i.hltbURL):
+            
+        continue
     
     print(i)
     
     #sets the title variable
-    title = i.Titles
+    title = i.Index
         
     #search request using POST
     r = requests.post(searchURL, data = {'queryString' : title})
@@ -34,48 +43,147 @@ for i in gameslist.loc[(pd.isnull(gameslist.hltbTitle))].itertuples():
     
     #checks if no list was returned
     if len(titlelist) == 0:
-        
+
         continue
     
     #urllist
     urlpath = '//h3/a/@href'
     urllist = tree.xpath(urlpath)
     
-    #sets the hltb title and url to be the first value
-    htlbTitle = titlelist[0]
-    htlbURL = urllist[0]
-    
-    #updates the values in the list
-    gameslist.loc[i.Index, 'hltbTitle'] = hltbTitle
-    gameslist.loc[i.Index, 'hltbURL'] = hltbURL
-    
     #return df for searching
-    searchdf = pd.DataFrame({'hltbTitle':titlelist, 'hltbURL':urllist})
+    searchdf = pd.DataFrame(data = {'hltbTitle':titlelist, 'hltbURL':urllist}, index= titlelist)
     
-    #looks through searchdf for other games in list and updates hltbTitle and hltbURL
-    for i in gameslist.loc[gameslist.Titles.isin(searchdf.hltbTitle[1:]),:].itertuples():
+    #return dict for mapping hltbURL to hltbTitle
+    #searchdict = dict(zip(titlelist, urllist))
     
-        gameslist.loc[i.Index,'hltbTitle'] = searchdf.loc[searchdf.hltbTitle == i.Titles]['hltbTitle'].values[0]
-        gameslist.loc[i.Index,'hltbURL'] = searchdf.loc[searchdf.hltbTitle == i.Titles]['hltbURL'].values[0]
-        gameslist.loc[i.Index,'titleMatch'] = True
+    #map hltbURL to hltbTitle
+    gameslist.update(searchdf)
     
-    #checks if more than 1 match returned
-    if len(titlelist) > 1:
+    #set hltbTitle = to Titles for matches
+    #gameslist.hltbTitle = gameslist.loc[gameslist.Titles.isin(searchdf.index)].Titles
+    
+    print(gameslist.loc[i.Index, 'hltbTitle'])
+    
+    if gameslist.loc[i.Index, 'hltbTitle'] == np.NaN and gameslist.loc[i.Index, 'hltbURL'] == np.NaN:
         
-        for i in titlelist:
+        print('test')
+        #sets the hltb title and url to be the first value
+        htlbTitle = titlelist[0]
+        htlbURL = urllist[0]
         
-            print(i)
-        
-    print(titlelist)
-    print(urllist)
+        #updates the values in the list
+        gameslist.loc[i.Index, 'hltbTitle'] = hltbTitle
+        gameslist.loc[i.Index, 'hltbURL'] = hltbURL
+
+
+####Start from here and try to figure out why the print('test') section isn't firing off when a match isn't found
+###
+
+
+
+#reset index
+gameslist = gameslist.reset_index()
 
 #sets titleMatch value
 gameslist.loc[gameslist.hltbTitle == gameslist.Titles, 'titleMatch'] = True
+
+
+
+
+
+
+
+
+
+print(gameslist)
+
+gameslist.hltbURL = searchdf.where(gameslist.Titles.isin(searchdf.index))
+
+gameslist[gameslist.Titles.isin(searchdf.index)]
+
+###This uses the update method and requires matching indexes ie:Title values
+gameslist.update(searchdf)
+test.update(searchdf1)
+
+searchdf = pd.DataFrame(data = {'hltbTitle':titlelist, 'hltbURL':urllist}, index= titlelist)
+
+print(searchdict1)
+gameslist.loc[gameslist.Titles.isin(searchdf1.index)]
+
+print(searchdict)
+gameslist.loc[gameslist.Titles.isin(searchdf.index)]
+
+test = gameslist.set_index('Titles')
+
+test.update(searchdf)
+test.update(searchdf1)
+
+test.hltbTitle = test.loc[test.index.isin(searchdf.index)].index
+
+test.loc[test.index.isin(searchdf.index)].hltbTitle = test.index.where(test.index.isin(searchdf.index))
+
+
+test.loc[test.isin(searchdf)]
+
+test.loc[test.index.isin(searchdf1.index)].hltbTitle
+
+= test.loc[test.index.isin(searchdf.index)].index
+
+gameslist.where(gameslist.Titles.isin(searchdf.index))
+
+searchdf
+searchdf1
+
+#map hltbURL to hltbTitle
+gameslist.loc[gameslist.Titles.isin(searchdf1.index)].hltbURL = gameslist.Titles.map(searchdict1, na_action=None)
+gameslist.loc[gameslist.Titles.isin(searchdf.index)].hltbURL = gameslist.Titles.map(searchdict, na_action=None)
+
+gameslist.hltbURL = gameslist.Titles.map(searchdict1, na_action=None)
+
+
+gameslist.loc[gameslist.Titles.isin(searchdf1.index)]
+gameslist.loc[gameslist.Titles.isin(searchdf.index)]
+
+
+gameslist.hltbURL = gameslist.Titles.map(searchdict, na_action=None)
+
+#set hltbTitle = to Titles for matches
+gameslist.hltbTitle = gameslist.loc[gameslist.Titles.isin(searchdf.hltbTitle)].Titles
+
+
+searchdf = pd.DataFrame(data = {'hltbURL':urllist}, index= titlelist)
+
+print(searchdf)
+
+gameslist.loc[gameslist.Titles.isin(searchdf.index)].hltbURL = searchdf.hltbURL
+
+
+gameslist.loc[gameslist.Titles.isin(searchdf.index)].hltbURL
+
+
+gameslist.hltbURL = gameslist.loc[gameslist.Titles.isin(searchdf.hltbTitle)].Titles
+
+
 
 #writes to csv file
 gameslist.to_csv('GamesList.csv')
 
 
+#reset
+gameslist.loc[:,['hltbTitle', 'hltbURL', 'titleMatch']] = np.NaN
+gameslist.loc[:,['hltbTitle', 'hltbURL', 'titleMatch']]
+
+
+gameslist[:1]
+
+gameslist.loc[gameslist.hltbTitle.isnull()][:5]
+
+#looks through searchdf for other games in list and updates hltbTitle and hltbURL
+for i in gameslist.loc[gameslist.Titles.isin(searchdf.hltbTitle[1:]),:].itertuples():
+
+    gameslist.loc[i.Index,'hltbTitle'] = searchdf.loc[searchdf.hltbTitle == i.Titles]['hltbTitle'].values[0]
+    gameslist.loc[i.Index,'hltbURL'] = searchdf.loc[searchdf.hltbTitle == i.Titles]['hltbURL'].values[0]
+    gameslist.loc[i.Index,'titleMatch'] = True
 
 
 print(searchdf.loc[searchdf.hltbTitle == 'Dead Space 3']['hltbURL'].values)
