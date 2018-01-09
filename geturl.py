@@ -3,7 +3,6 @@ import requests
 import pandas as pd
 import os
 
-
 #change directory
 os.chdir(r'C:\Users\mike.lanza\Documents\Python\GitHub\VideoGameAnalytics')
 
@@ -98,6 +97,10 @@ gameslist = gameslist.reset_index()
 
 #sets titleMatch value
 gameslist.loc[gameslist.hltbTitle == gameslist.Titles, 'titleMatch'] = True
+gameslist.loc[gameslist.hltbTitle != gameslist.Titles, 'titleMatch'] = False
+
+#sets full URL values
+gameslist.loc[~gameslist.hltbURL.str.contains('https://howlongtobeat.com/|URL missing') , 'hltbURL'] = 'https://howlongtobeat.com/' + gameslist.hltbURL 
 
 #writes to csv file
 gameslist.to_csv('GamesList.csv')
