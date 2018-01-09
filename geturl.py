@@ -85,10 +85,6 @@ for i in gameslist.loc[gameslist.hltbTitle.isnull()].itertuples():
     
     if TitleMatch == False:
         
-<<<<<<< HEAD
-    print(titlelist)
-    print(urllist)
-=======
         #sets the hltb title and url to be the first value
         hltbTitle = titlelist[0]
         hltbURL = urllist[0]
@@ -97,14 +93,8 @@ for i in gameslist.loc[gameslist.hltbTitle.isnull()].itertuples():
         gameslist.loc[i.Index, 'hltbTitle'] = hltbTitle
         gameslist.loc[i.Index, 'hltbURL'] = hltbURL
 
-
-####Start from here and try to figure out why the print('test') section isn't firing off when a match isn't found
-###
-
-
 #reset index
 gameslist = gameslist.reset_index()
->>>>>>> iteration_optimization
 
 #sets titleMatch value
 gameslist.loc[gameslist.hltbTitle == gameslist.Titles, 'titleMatch'] = True
@@ -112,7 +102,3 @@ gameslist.loc[gameslist.hltbTitle == gameslist.Titles, 'titleMatch'] = True
 #writes to csv file
 gameslist.to_csv('GamesList.csv')
 
-<<<<<<< HEAD
-=======
-
->>>>>>> iteration_optimization
