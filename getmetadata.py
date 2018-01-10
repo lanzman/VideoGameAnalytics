@@ -38,3 +38,52 @@ for i in gameslist.loc[(gameslist.hltbURL != 'URL missing') & gameslist.mainleng
     gameslist.loc[i.Index,'mainlength'] = mainlength
     
     print(i.hltbTitle, ' ', mainlength)
+
+
+#create metacritic platformURL
+gameslist.loc[:,'platformURL'] = gameslist.loc[:,'Platform'].str.split('/').str[0].str.lower()
+
+#create subsitution dictionary
+platformdict = {'ps4':'playstation-4', \
+               'ps3':'playstation-3', \
+               'pc': 'pc', \
+               'PS Vita':'playstation-vita', \
+               '3ds': '3ds', \
+               'psp': 'psp', \
+               'ps2': 'playstation-2', \
+               'ps1': 'playstation', \
+               'ds': 'ds'}
+
+#replaces the extracted platform with the correct format for the URL
+gameslist.platformURL.replace(platformdict, inplace = True)
+
+#generate metacriticURL
+gameslist.loc[:,'metacriticURL'] = 'http://www.metacritic.com/game/' + gameslist.loc[:,'platformURL'] + '/' + gameslist.loc[:,'hltbTitle'].str.replace(' ', '-').str.lower()
+
+#sets the headers required for the get request
+headers = {'User-Agent' : "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"}
+
+for i in gameslist.itertuples():
+    
+    #sets the url
+    url = i.metacriticURL
+    
+    print(url)
+    
+    #creates the metacritic html page and tree
+    metacriticpage = requests.get(url, headers = headers)
+    tree = html.fromstring(metacriticpage.content)
+    
+    #path to extract the metacritic score
+    scorepath = '//a[@class="metascore_anchor"]/div/span[@itemprop="ratingValue"]/text()'
+    
+    try:
+        scorelist = tree.xpath(titlepath)[0]
+    except IndexError:
+        
+        gameslist.loc[i.Index,'metacriticScore'] = 'invalidURL'
+        continue
+    
+    #set score value    
+    gameslist.loc[i.Index, 'metacriticScore'] = scorelist
+    
