@@ -99,9 +99,22 @@ gameslist = gameslist.reset_index()
 gameslist.loc[gameslist.hltbTitle == gameslist.Titles, 'titleMatch'] = True
 gameslist.loc[gameslist.hltbTitle != gameslist.Titles, 'titleMatch'] = False
 
+#Remove NaNs and replace with URL missing and Title missing
+gameslist.hltbURL = gameslist.hltbURL.fillna('URL missing')
+gameslist.hltbTitle = gameslist.hltbTitle.fillna('Title missing')
+
 #sets full URL values
 gameslist.loc[~gameslist.hltbURL.str.contains('https://howlongtobeat.com/|URL missing') , 'hltbURL'] = 'https://howlongtobeat.com/' + gameslist.hltbURL 
 
+#create dataframe with missing data
+checklist = gameslist.loc[(gameslist.hltbURL == 'URL missing') | (gameslist.hltbTitle == 'Title missing')].copy()
+
+### run last line of code after manually updating Titles
+### run urlloop after updating Titles
+
+#update gameslist with checklist
+gameslist.loc[checklist.index, 'hltbTitle'] = checklist.hltbTitle
+gameslist.loc[checklist.index, 'hltbURL'] = checklist.hltbURL
+
 #writes to csv file
 gameslist.to_csv('GamesList.csv')
-
