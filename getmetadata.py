@@ -1,6 +1,8 @@
 from lxml import html
 import requests
 import pandas as pd
+import numpy as np
+import re
 import os
 
 #change directory
@@ -9,6 +11,8 @@ os.chdir(r'C:\Users\mike.lanza\Documents\Python\GitHub\VideoGameAnalytics')
 #import gameslist csv
 gameslist = pd.read_csv('GamesList.csv', index_col=0, encoding= 'ISO-8859-1')
 
+#regex pattern for time
+pattern = '(?:([0-9]+)h ?)?(?:([0-9]+)m ?)?(?:([0-9]+)s ?)?'
 
 #loop through all titles to post requests
 for i in gameslist.loc[(gameslist.hltbURL != 'URL missing') & gameslist.mainlength.isnull()].itertuples():
@@ -29,10 +33,18 @@ for i in gameslist.loc[(gameslist.hltbURL != 'URL missing') & gameslist.mainleng
     #if nothing returned, skip to next title
     if len(lengthlist) == 0:
         
-        continue
+        mainlength = 'invalidURL'
     
-    #sets the mainlength variable
-    mainlength = lengthlist[2]
+    else:
+    
+        #gets the resulting groups from the pattern and the time string
+        result = re.match(pattern, lengthlist[2])
+        
+        #replaces None values with 0 if particular group isn't found in regex
+        groupresult = ['0' if x == None else x for x in list(result.group(1,2,3))]
+        
+        #sets the mainlength variable to a consistent string
+        mainlength = groupresult[0] + 'h ' + groupresult[1] + 'm ' + groupresult[2] + 's'
     
     #updates the value in the gameslist
     gameslist.loc[i.Index,'mainlength'] = mainlength
@@ -123,7 +135,7 @@ for i in gameslist.itertuples():
         try:
             
             #sets metacriticscore
-            metacriticscore = tree.xpath(scorepath)[0]
+            metacriticscore = float(tree.xpath(scorepath)[0])
         
         except IndexError:
             
@@ -154,12 +166,31 @@ for i in gameslist.itertuples():
     gameslist.loc[i.Index, 'developer'] = developer
     gameslist.loc[i.Index, 'genre'] = genre
 
+#convert playtimes to a timedelta
+gameslist['formatmainlength'] = pd.to_timedelta(gameslist.mainlength)
+
+##sorting
+#gameslist.sort_values(by = ['formatmainlength'], axis = 0, ascending = False)
+
 #find all the unique genres of the gameslist
 genres = pd.DataFrame(', '.join(gameslist.genre.str.strip()).split(sep = ', '),columns=['genre']).drop_duplicates()
 
+#reset the index for the genre dataframe
+genres.reset_index(drop = True, inplace = True)
+
+#finds count, avg playtime, avg score
+for i in genres.itertuples():
+    
+    #filter dataframe specific to genre
+    genredf = gameslist.loc[(~gameslist.metacriticScore.isin(['NoScoreFound','invalidURLs'])) & (gameslist.genre.str.contains(i.genre))]
+    
+    #set values for columns in genredf
+    genres.loc[i.Index,'count'] = len(genredf)    
+    genres.loc[i.Index,'meanplaytime'] = genredf.formatmainlength.mean()
+    genres.loc[i.Index,'meanscore'] = genredf.metacriticScore.mean()
+    print(genres.loc[i.Index])
 
 
-rpg = gameslist.loc[gameslist.genre.str.contains('Role-Playing')]
 
 
 genrepath = '//li[@class="summary_detail product_genre"]/span[@itemprop="genre"]/text()'
@@ -264,16 +295,3 @@ for i in gameslist.loc[0:1].itertuples():
     print(titlelist)
     
     
-
-/div[@class="colright"]/div[@class="title"]'
-
-
-#    #initiates gamepage requests
-#    metacritic = requests.get(searchURL)
-#       
-#    #get html from page
-#    tree = html.fromstring(gamepage.content)
-#        
-#    #tablepath
-#    tablepath = '//table[@class="game_main_table"]/tbody[@class="spreadsheet"][1]/tr/td/text()'
-#    lengthlist = tree.xpath(tablepath)
