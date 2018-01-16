@@ -58,7 +58,7 @@ platformdict = {'ps4':'playstation-4', \
 gameslist.platformURL.replace(platformdict, inplace = True)
 
 #generate metacriticURL
-gameslist.loc[:,'metacriticURL'] = 'http://www.metacritic.com/game/' + gameslist.loc[:,'platformURL'] + '/' + gameslist.loc[:,'hltbTitle'].str.replace(' ', '-').str.lower()
+gameslist.loc[:,'metacriticURL'] = 'http://www.metacritic.com/game/' + gameslist.loc[:,'platformURL'] + '/' + gameslist.loc[:,'hltbTitle'].str.replace(' ', '-').str.replace(':','').str.replace("'",'').str.lower()
 
 #sets the headers required for the get request
 headers = {'User-Agent' : "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"}
@@ -70,20 +70,210 @@ for i in gameslist.itertuples():
     
     print(url)
     
+    #resets metacriticscore, developer, and genre
+    metacriticscore = None
+    developer = None
+    genre = None
+    
     #creates the metacritic html page and tree
     metacriticpage = requests.get(url, headers = headers)
-    tree = html.fromstring(metacriticpage.content)
     
-    #path to extract the metacritic score
-    scorepath = '//a[@class="metascore_anchor"]/div/span[@itemprop="ratingValue"]/text()'
-    
-    try:
-        scorelist = tree.xpath(titlepath)[0]
-    except IndexError:
+    #if page get request fails
+    if metacriticpage.status_code != 200:
         
-        gameslist.loc[i.Index,'metacriticScore'] = 'invalidURL'
-        continue
+        #sets the metacriticscore, developer, and genre to invalidURLs until a valid URL is found
+        metacriticscore = 'invalidURLs'
+        developer = 'invalidURLs'
+        genre = 'invalidURLs'
+        
+        
+        #loop through dictionary to modify url for different platforms
+        for k, v in platformdict.items():
+            
+            #creates the new URL to test
+            url = 'http://www.metacritic.com/game/' + v + '/' + i.hltbTitle.replace(' ', '-').replace('.','').replace(',','').replace(':','').replace("'",'').lower()
+            print(url)
+            #creates the metacritic html page and tree
+            metacriticpage = requests.get(url, headers = headers)
+            
+            #check if page valid
+            if metacriticpage.status_code == 200:
+                
+                #update url to working url
+                gameslist.loc[i.Index, 'metacriticURL'] = url
+                
+                #sets metacriticscore, developer, and genre back to None
+                metacriticscore = None
+                developer = None
+                genre = None
+                
+                break
+    
+    #if metacriticscore skip to next item
+    if metacriticscore == None:
+        
+        #creates html tree
+        tree = html.fromstring(metacriticpage.content)
+        
+        #path to extract the metacritic score
+        scorepath = '//a[@class="metascore_anchor"]/div/span[@itemprop="ratingValue"]/text()'
+        developerpath = '//li[@class="summary_detail developer"]/span[@class="data"]/text()'
+        genrepath = '//li[@class="summary_detail product_genre"]/span[@itemprop="genre"]/text()' 
+
+        try:
+            
+            #sets metacriticscore
+            metacriticscore = tree.xpath(scorepath)[0]
+        
+        except IndexError:
+            
+            #sets metacriticscore
+            metacriticscore = 'NoScoreFound'
+        
+        try:
+            
+            #sets developer
+            developer = str.strip(tree.xpath(developerpath)[0])
+            
+        except IndexError:
+            
+            developer = 'NoDeveloperFound'
+        
+        try:
+            
+            #sets genre
+            genre = ', '.join(set(tree.xpath(genrepath)))
+            
+        except IndexError:
+            
+            #sets metacriticscore
+            genre = 'NoGenreFound'
     
     #set score value    
-    gameslist.loc[i.Index, 'metacriticScore'] = scorelist
+    gameslist.loc[i.Index, 'metacriticScore'] = metacriticscore
+    gameslist.loc[i.Index, 'developer'] = developer
+    gameslist.loc[i.Index, 'genre'] = genre
+
+#find all the unique genres of the gameslist
+genres = pd.DataFrame(', '.join(gameslist.genre.str.strip()).split(sep = ', '),columns=['genre']).drop_duplicates()
+
+
+
+rpg = gameslist.loc[gameslist.genre.str.contains('Role-Playing')]
+
+
+genrepath = '//li[@class="summary_detail product_genre"]/span[@itemprop="genre"]/text()'
+
+genre = list(set(tree.xpath(genrepath)))
+
+genre[2]
+
+type(genre)
+
+genre = ', '.join(set(tree.xpath(genrepath)))
+
+
+gameslist.dtypes
+
+gameslist.genre = gameslist.genre.astype('object')
+
+testlist = ['a','b','c']
+
+gameslist['genre'][0] = genre
+
+gameslist['genre'][0][0]
+
+gameslist['Playing Status'].str.contains('Not Played')
+
+gameslist['genre'].str.contains('a')
+
+gameslist.loc['a' in gameslist.genre]
+
+gameslist['genre'].str.contains('Arcade|test')
+
+gameslist['Playing Status'].isin(['Not Played'])
+
+
+#add code to remove special characters from title for URL
+
+#working on using search functions for using the correct url when it doesn't quite work
+#try to get headers section working correctly for below solutions
+
+#sets the url
+url = gameslist.loc[1:1,'metacriticURL'].values[0]
+
+#creates the metacritic html page and tree
+metacriticpage = requests.get(url, headers = headers)
+tree = html.fromstring(metacriticpage.content)
+
+#path to extract the metacritic score
+scorepath = '//a[@class="metascore_anchor"]/div/span[@itemprop="ratingValue"]/text()'
+scorelist = tree.xpath(titlepath)[0]
+
+gameslist.loc[i.Index, 'metacriticScore'] = scorelist
+
+
+'http://www.metacritic.com/game/pc/dead-space'
+
+print(url.values[0])
+
+
+
+
+tree.reponse
+
+#sets the searchURL
+searchURL = r'http://www.metacritic.com/autosearch'
+
+#sets the title variable
+title = 'Dead Space'
     
+#search request using POST
+r = requests.post(searchURL, data = {'search_term' : title,'User-Agent': "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"})
+
+#get html from page
+tree = html.fromstring(r.content)
+
+#titlelist
+titlepath = '//p/text()'
+titlelist = tree.xpath(titlepath)
+
+print(titlelist)
+
+
+
+
+
+
+#loop through all titles to post requests
+for i in gameslist.loc[0:1].itertuples():
+    
+    #sets the title variable
+    title = i.hltbTitle
+        
+    #search request using POST
+    r = requests.post(searchURL, data = {'queryString' : title})
+
+    #get html from page
+    tree = html.fromstring(r.content)
+    
+    #titlelist
+    titlepath = '//td[@class="list r30 inset_right"]/div[@class="colright"]/div[@class="title"]'
+    titlelist = tree.xpath(titlepath)
+    
+    print(titlelist)
+    
+    
+
+/div[@class="colright"]/div[@class="title"]'
+
+
+#    #initiates gamepage requests
+#    metacritic = requests.get(searchURL)
+#       
+#    #get html from page
+#    tree = html.fromstring(gamepage.content)
+#        
+#    #tablepath
+#    tablepath = '//table[@class="game_main_table"]/tbody[@class="spreadsheet"][1]/tr/td/text()'
+#    lengthlist = tree.xpath(tablepath)
