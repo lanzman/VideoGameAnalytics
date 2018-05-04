@@ -98,3 +98,7 @@ ENV/
 # mypy
 .mypy_cache/
 Archive/GamesList.csv
+SampleCode/geturl.py
+SampleCode/test.py
+SampleCode/urlloop.py
+SampleCode/getmetadata.py
