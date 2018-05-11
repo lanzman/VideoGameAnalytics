@@ -5,10 +5,15 @@ Created on Wed May  2 13:48:37 2018
 @author: mike.lanza
 """
 
-from GoogleDrive import GDrive
-
-import hltb
+#import sys
 #
+##focus on the files directory
+#sys.argv[0]
+#
+
+from GoogleDrive import GDrive
+import hltb
+
 
 #
 #
@@ -19,7 +24,7 @@ GamesListFileID = '1OewpCqeugcbNEZQmsYaB9ItOnV9Kkfvuk83BRJaUHFY'
 gamesdf = GDrive.DataFrameDownload(GamesListFileID)
 
 #runs through the hltb geturl function and updates dataframe
-gamesdf = hltb.geturl(gamesdf)
+gamesdf, checklist = hltb.geturl(gamesdf)
 
 
 
