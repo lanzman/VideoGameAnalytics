@@ -176,8 +176,7 @@ def titlesearch(title, searchURL):
     #search request using POST
     r = requests.post(searchURL, data = {'queryString' : title})
     
-    print('Check that this actually')
-    
+    #sets encoding to be utf-8 to handle special characters
     r.encoding = 'utf-8'
     
     #get html from page
@@ -199,9 +198,6 @@ def titlesearch(title, searchURL):
     urlpath = '//h3/a/@href'
     urllist = tree.xpath(urlpath)
     
-    
-    ####Mess around with the encoding at this point for the searchdf stuff
-    ##might be the part I removed that I shouldn't have or something to do with varying encoding.  for some reason new versions aren't taking either
     #create df for searching and updating
     searchdf = pd.DataFrame(data = {'hltbTitle':titlelist, 'hltbURL':urllist}, index= titlelist)
     
