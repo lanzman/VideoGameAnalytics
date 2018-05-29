@@ -12,9 +12,9 @@ def manualsearch(gamesdf):
     #init yes/no choice    
     yes = ['yes','y', 'ye', '']
     no = ['no','n']
+    topfive =  ['1', '2', '3', '4', '5']
     
-    
-    for i in gamesdf.loc[gamesdf.hltbTitle != gamesdf.hltbTitle].itertuples():
+    for i in gamesdf.loc[((gamesdf.hltbTitle) != (gamesdf.hltbTitle)) | (gamesdf.mainlength == 'URL missing')].itertuples():
         
         #input to enter a title to search for
         searchtitle = input('Please enter new title for ' + i.Titles + '.\n')
@@ -41,18 +41,32 @@ def manualsearch(gamesdf):
                 searchresult = 'no'
             
             else:
+                
+                k = 1
+                #display top 5 results from search
+                for j in searchdf[0:5].itertuples():
+                    
+                    print(k, ' ', j.hltbTitle)
+                    k += 1
                 #returns the hltbTitle from the search
-                searchresult = input('Resulting title is ' + searchdf.hltbTitle[0] + ', do you accept?\n').lower()
+                searchresult = input('Enter corresponding number for title you wish to use or n to enter a new search\n').lower()
                 
             #if user accepts search result, the gamesdf will be updated
-            if searchresult in yes:
-    
+            if (searchresult in yes) or (searchresult in topfive):
+                
+                #if first result accepted
+                if searchresult in yes:
+                    searchindex = 0
+                #otherwise set search index down one
+                else:
+                    searchindex = int(searchresult) - 1
+                
                 #updates the title in the gamesdf
-                gamesdf.loc[i.Index, 'Titles'] = searchdf.hltbTitle[0]
-                gamesdf.loc[i.Index, 'hltbTitle'] = searchdf.hltbTitle[0]
-                gamesdf.loc[i.Index, 'TitleMatch'] = searchdf.TitleMatch[0]
-                gamesdf.loc[i.Index, 'hltbURL'] = searchdf.hltbURL[0]
-                gamesdf.loc[i.Index, 'mainlength'] = getmainlength(searchdf.hltbURL[0])
+                gamesdf.loc[i.Index, 'Titles'] = searchdf.hltbTitle[searchindex]
+                gamesdf.loc[i.Index, 'hltbTitle'] = searchdf.hltbTitle[searchindex]
+                gamesdf.loc[i.Index, 'TitleMatch'] = searchdf.TitleMatch[searchindex]
+                gamesdf.loc[i.Index, 'hltbURL'] = searchdf.hltbURL[searchindex]
+                gamesdf.loc[i.Index, 'mainlength'] = getmainlength(searchdf.hltbURL[searchindex])
                 
                 #for breaking out of searchtitle loop
                 searchtitle = None
