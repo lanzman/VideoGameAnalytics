@@ -75,7 +75,8 @@ def manualsearch(gamesdf):
             else:
                 
                 print('Please enter valid answer.')
-
+                
+    print('Manual updates complete!')
     return gamesdf
 
 #gets the hltbURL, hltbTitle, and playtime
@@ -177,7 +178,7 @@ def titlesearch(title, searchURL):
     r = requests.post(searchURL, data = {'queryString' : title})
     
     #get html from page
-    tree = html.fromstring(r.content)
+    tree = html.fromstring(r.text)
     
     #titlelist
     titlepath = '//h3/a/text()'
@@ -216,7 +217,7 @@ def getmainlength(searchURL):
     gamepage = requests.get(searchURL)
        
     #get html from page
-    tree = html.fromstring(gamepage.content)
+    tree = html.fromstring(gamepage.text)
         
     #tablepath
     tablepath = '//table[@class="game_main_table"]/tbody[@class="spreadsheet"][1]/tr/td/text()'
