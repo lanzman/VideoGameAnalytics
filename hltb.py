@@ -75,7 +75,10 @@ def manualsearch(gamesdf):
             else:
                 
                 print('Please enter valid answer.')
-                
+    
+    #sorts df
+    gamesdf.sort_values('Titles', inplace = True)
+    
     print('Manual updates complete!')
     return gamesdf
 
@@ -168,6 +171,9 @@ def geturl(gamesdf):
     
     #create dataframe with missing data
     checklist = gamesdf.loc[(gamesdf.mainlength == 'URL missing') | (gamesdf.hltbTitle == 'Title missing')].copy()
+    
+    #sorts df
+    gamesdf.sort_values('Titles', inplace = True)
     
     return gamesdf, checklist
 
@@ -283,6 +289,9 @@ def verifychecklist(gamesdf, checklist):
     
     #reduces the checklist
     checklist = checklist.loc[checklist.mainlength == 'URL missing']
+    
+    #sorts df
+    gamesdf.sort_values('Titles', inplace = True)
     
     print('Verification Complete!')
     
