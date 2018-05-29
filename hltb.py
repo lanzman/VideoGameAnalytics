@@ -144,7 +144,7 @@ def geturl(gamesdf):
             #sets the mainlength value
             mainlength = 'URL missing'
         
-        #if TitleMatch is False, go forward and get the timing metrics
+        #if TitleMatch is True, go forward and get the timing metrics
         else:
             
             if multiindex == True:
@@ -176,11 +176,8 @@ def titlesearch(title, searchURL):
     #search request using POST
     r = requests.post(searchURL, data = {'queryString' : title})
     
-    #sets encoding to be utf-8 to handle special characters
-    r.encoding = 'utf-8'
-    
     #get html from page
-    tree = html.fromstring(r.text)
+    tree = html.fromstring(r.content)
     
     #titlelist
     titlepath = '//h3/a/text()'
@@ -225,10 +222,10 @@ def getmainlength(searchURL):
     tablepath = '//table[@class="game_main_table"]/tbody[@class="spreadsheet"][1]/tr/td/text()'
     lengthlist = tree.xpath(tablepath)
     
-    #if nothing returned, skip to next title
+    #if nothing returned, time was not recorded
     if len(lengthlist) == 0:
         
-        mainlength = 'URL missing'
+        mainlength = 'No Time Available'
     else:
         #sets the mainlength variable
         mainlength = lengthlist[2]
