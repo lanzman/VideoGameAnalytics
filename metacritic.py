@@ -114,6 +114,16 @@ def getmetadata(gamesdf):
         metacriticdf.loc[i.Index, 'metacriticMetaScore'] = metascore
         metacriticdf.loc[i.Index, 'metacriticUserScore'] = userscore
     
+#    gamesdf.drop(['platformURL','metacriticURL','metacriticScore','metacriticTitle'],axis = 1, inplace =True)
+#    
+#    gamesdf['platformURL'] = None    
+#    gamesdf['metacriticTitle'] = None
+#    gamesdf['metacriticURL'] = None
+#    gamesdf['metacriticMetaScore'] = None
+#    gamesdf['metacriticUserScore'] = None
+    
+    #updates gamesdf
+    gamesdf.update(metacriticdf)
     ###ADD section to drop unecessary columns before merging
     #metacriticdf.drop(labels =['])
     
