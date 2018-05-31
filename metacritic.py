@@ -1,13 +1,11 @@
 from lxml import html
 import requests
 import pandas as pd
-import os
-
-metacriticdf = gamesdf
 
 def getmetadata(gamesdf):
     
-    metacriticdf = gamesdf.loc[gamesdf.metacriticScore.isnull()]
+    #sets up df for searching
+    metacriticdf = gamesdf.loc[gamesdf.metacriticMetaScore.isnull()]
     
     #create metacritic platformURL
     metacriticdf.loc[:,'platformURL'] = metacriticdf.loc[:,'Platform'].str.split('/').str[0].str.lower()
@@ -16,7 +14,7 @@ def getmetadata(gamesdf):
     platformdict = {'ps4':'playstation-4', \
                    'ps3':'playstation-3', \
                    'pc': 'pc', \
-                   'PS Vita':'playstation-vita', \
+                   'ps vita':'playstation-vita', \
                    '3ds': '3ds', \
                    'psp': 'psp', \
                    'ps2': 'playstation-2', \
@@ -121,9 +119,12 @@ def getmetadata(gamesdf):
 #    gamesdf['metacriticURL'] = None
 #    gamesdf['metacriticMetaScore'] = None
 #    gamesdf['metacriticUserScore'] = None
-    
+#    
     #updates gamesdf
     gamesdf.update(metacriticdf)
+    
+    return gamesdf
+
     ###ADD section to drop unecessary columns before merging
     #metacriticdf.drop(labels =['])
     

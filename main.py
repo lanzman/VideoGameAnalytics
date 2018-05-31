@@ -7,6 +7,7 @@ Created on Wed May  2 13:48:37 2018
 
 from GoogleDrive import GDrive
 import hltb
+import metacritic
 
 #GamesList file ID from GoogleDrive
 GamesListFileID = '1OewpCqeugcbNEZQmsYaB9ItOnV9Kkfvuk83BRJaUHFY'
@@ -24,6 +25,9 @@ gamesdf, checklist = hltb.verifychecklist(gamesdf, checklist)
 
 #passes gamesdf and allows user to manually search for titles
 gamesdf = hltb.manualsearch(gamesdf)
+
+#gets metacritic data
+gamesdf = metacritic.getmetadata(gamesdf)
 
 #gets metadata from Games List for updating
 gamesdfmetadata = GDrive.searchFile(10, query = ("name contains '" + GamesListFileName + "'"))
